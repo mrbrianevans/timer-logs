@@ -1,0 +1,14 @@
+{
+  "name": "timer-logs",
+  "version": "1.0.1",
+  "devDependencies": {
+    "@types/node": "^"
+  },
+  "author": {
+    "email": "brian@brianevans.tech",
+    "name": "Brian Evans",
+    "url": "brianevans.tech"
+  },
+  "license": "MIT",
+  "types": "./Timer.d.ts"
+}
