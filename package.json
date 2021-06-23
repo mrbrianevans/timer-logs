@@ -1,8 +1,8 @@
 {
   "name": "timer-logs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "devDependencies": {
-    "@types/node": "^"
+    "@types/node": "^15.00.0"
   },
   "author": {
     "email": "brian@brianevans.tech",
@@ -14,5 +14,11 @@
   "scripts": {
     "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly"
   },
-  "keywords": ["nodejs", "typescript", "logging", "timer", "google cloud logging"]
+  "keywords": [
+    "nodejs",
+    "typescript",
+    "logging",
+    "timer",
+    "google cloud logging"
+  ]
 }
