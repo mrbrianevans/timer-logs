@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Timer = void 0;
 class Timer {
     constructor(config) {
         var _a, _b;
@@ -104,4 +103,4 @@ class Timer {
         console.log(JSON.stringify(errorLog));
     }
 }
-exports.Timer = Timer;
+exports.default = Timer;

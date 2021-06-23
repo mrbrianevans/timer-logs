@@ -10,5 +10,9 @@
     "url": "brianevans.tech"
   },
   "license": "MIT",
-  "types": "./Timer.d.ts"
+  "types": "./Timer.d.ts",
+  "scripts": {
+    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly"
+  },
+  "keywords": ["nodejs", "typescript", "logging", "timer", "google cloud logging"]
 }

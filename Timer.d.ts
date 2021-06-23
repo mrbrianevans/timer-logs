@@ -13,9 +13,10 @@ declare type Config = {
     details?: {
         [key: string]: string | number;
     };
+    /** filename of the typescript source file where the log is coming from */
     filename: string;
 };
-export declare class Timer {
+export default class Timer {
     private readonly startTime;
     private finishTime;
     private mostRecentlyStartedLabel;
@@ -23,8 +24,8 @@ export declare class Timer {
     private readonly savedTimes;
     /**
      * Create a new Timer object. Can have multiple timers within this object.
-     * Should only have one of these per file
-     * @param config optional configuration object with message and severity
+     * Should only have one of these per file. Creating this object beings a timer automatically
+     * @param config required configuration object, requires filename, others are optional
      */
     constructor(config: Config);
     /**
@@ -116,6 +117,9 @@ export declare class Timer {
      */
     genericError(e: Error, message?: string): void;
 }
+/**
+ * Postgres error type thrown by pg library
+ */
 declare type PostgresError = {
     message: string;
     errno: string;
