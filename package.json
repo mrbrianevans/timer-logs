@@ -1,6 +1,6 @@
 {
   "name": "timer-logs",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "devDependencies": {
     "@types/node": "^15.00.0"
   },
