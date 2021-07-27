@@ -16,8 +16,8 @@ type Config = {
 }
 export default class Timer {
     private readonly startTime: number
-    private finishTime: number
-    private mostRecentlyStartedLabel: string
+    private finishTime?: number
+    private mostRecentlyStartedLabel?: string
     private config: Config
     private readonly savedTimes: { [label: string]: { startTime: number; finishTime?: number; time?: number } }
     /**
