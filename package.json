@@ -19,6 +19,17 @@
     "typescript",
     "logging",
     "timer",
-    "google cloud logging"
-  ]
+    "google cloud logging",
+    "performance",
+    "profiling"
+  ],
+  "repository": {
+    "url": "https://github.com/mrbrianevans/timer-logs"
+  },
+  "bugs": {
+    "url": "https://github.com/mrbrianevans/timer-logs/issues"
+  },
+  "description": "Nodejs logging library to time function execution",
+  "main": "index.js",
+  "readme": "README.md"
 }
