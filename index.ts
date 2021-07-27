@@ -62,8 +62,9 @@ export default class Timer {
     public stop(label: string) {
         console.assert(this.savedTimes.hasOwnProperty(label), 'Timer stopped for unstarted label. Missing timer.start()')
         console.assert(this.savedTimes[label].finishTime === undefined, 'Stop called more than once for same label')
-        this.savedTimes[label].finishTime = Date.now()
-        this.savedTimes[label].time = this.savedTimes[label].finishTime - this.savedTimes[label].startTime
+        const finishTime = Date.now()
+        this.savedTimes[label].finishTime = finishTime
+        this.savedTimes[label].time = finishTime - this.savedTimes[label].startTime
         return this.savedTimes[label].time
     }
 
@@ -80,6 +81,10 @@ export default class Timer {
      * timer.end()
      */
     public next(label: string) {
+        if(!this.mostRecentlyStartedLabel){
+            console.error('Next called before a timer was started')
+            return
+        }
         this.stop(this.mostRecentlyStartedLabel)
         this.start(label)
     }
@@ -103,8 +108,9 @@ export default class Timer {
             message: (this.config?.label ?? `Timer`) + `: ${this.finishTime - this.startTime}ms`,
             filename: this.config?.filename
         }
-        Object.entries(this.savedTimes).forEach(([label, times]) => {
-            printObject[label] = times.time
+        Object.entries(this.savedTimes)
+            .forEach(([label, times]) => {
+            if(typeof times.time === 'number') printObject[label] = times.time
         })
         if (this?.config?.details)
             Object.entries(this.config.details).forEach(([label, detail]) => {

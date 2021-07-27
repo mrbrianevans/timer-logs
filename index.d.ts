@@ -18,8 +18,8 @@ declare type Config = {
 };
 export default class Timer {
     private readonly startTime;
-    private finishTime;
-    private mostRecentlyStartedLabel;
+    private finishTime?;
+    private mostRecentlyStartedLabel?;
     private config;
     private readonly savedTimes;
     /**
@@ -34,13 +34,13 @@ export default class Timer {
      * @return object which can be used to stop the timer without its label
      */
     start(label: string): {
-        stop: () => number;
+        stop: () => number | undefined;
     };
     /**
      * Stops a timer and saves the time taken
      * @param label the label of the timer you wish to stop
      */
-    stop(label: string): number;
+    stop(label: string): number | undefined;
     /**
      * Stops the most recently started timer, and starts a new one
      * @param label for new timer started
@@ -57,7 +57,7 @@ export default class Timer {
     /**
      * stops the most recently started timer
      */
-    end(): number;
+    end(): number | undefined;
     /**
      * prints times to the console in JSON format for Google Cloud Logging.
      *

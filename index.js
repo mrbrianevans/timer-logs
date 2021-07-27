@@ -26,11 +26,16 @@ class Timer {
     stop(label) {
         console.assert(this.savedTimes.hasOwnProperty(label), 'Timer stopped for unstarted label. Missing timer.start()');
         console.assert(this.savedTimes[label].finishTime === undefined, 'Stop called more than once for same label');
-        this.savedTimes[label].finishTime = Date.now();
-        this.savedTimes[label].time = this.savedTimes[label].finishTime - this.savedTimes[label].startTime;
+        const finishTime = Date.now();
+        this.savedTimes[label].finishTime = finishTime;
+        this.savedTimes[label].time = finishTime - this.savedTimes[label].startTime;
         return this.savedTimes[label].time;
     }
     next(label) {
+        if (!this.mostRecentlyStartedLabel) {
+            console.error('Next called before a timer was started');
+            return;
+        }
         this.stop(this.mostRecentlyStartedLabel);
         this.start(label);
     }
@@ -48,8 +53,10 @@ class Timer {
             message: ((_d = (_c = this.config) === null || _c === void 0 ? void 0 : _c.label) !== null && _d !== void 0 ? _d : `Timer`) + `: ${this.finishTime - this.startTime}ms`,
             filename: (_e = this.config) === null || _e === void 0 ? void 0 : _e.filename
         };
-        Object.entries(this.savedTimes).forEach(([label, times]) => {
-            printObject[label] = times.time;
+        Object.entries(this.savedTimes)
+            .forEach(([label, times]) => {
+            if (typeof times.time === 'number')
+                printObject[label] = times.time;
         });
         if ((_f = this === null || this === void 0 ? void 0 : this.config) === null || _f === void 0 ? void 0 : _f.details)
             Object.entries(this.config.details).forEach(([label, detail]) => {
