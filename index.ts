@@ -20,6 +20,7 @@ export default class Timer {
     private mostRecentlyStartedLabel?: string
     private config: Config
     private readonly savedTimes: { [label: string]: { startTime: number; finishTime?: number; time?: number } }
+
     /**
      * Create a new Timer object. Can have multiple timers within this object.
      * Should only have one of these per file. Creating this object beings a timer automatically
@@ -43,7 +44,7 @@ export default class Timer {
         console.assert(label !== 'message', 'Label cannot be called message. Reserved by default')
         console.assert(label !== 'severity', 'Label cannot be called severity. Reserved by default')
         this.mostRecentlyStartedLabel = label
-        this.savedTimes[label] = { startTime: Date.now() }
+        this.savedTimes[label] = {startTime: Date.now()}
         /**
          * Stops the timer and saves the time taken
          */
@@ -81,7 +82,7 @@ export default class Timer {
      * timer.end()
      */
     public next(label: string) {
-        if(!this.mostRecentlyStartedLabel){
+        if (!this.mostRecentlyStartedLabel) {
             console.error('Next called before a timer was started')
             return
         }
@@ -95,6 +96,7 @@ export default class Timer {
     public end() {
         if (this.mostRecentlyStartedLabel) return this.stop(this.mostRecentlyStartedLabel)
     }
+
     /**
      * prints times to the console in JSON format for Google Cloud Logging.
      *
@@ -110,8 +112,8 @@ export default class Timer {
         }
         Object.entries(this.savedTimes)
             .forEach(([label, times]) => {
-            if(typeof times.time === 'number') printObject[label] = times.time
-        })
+                if (typeof times.time === 'number') printObject[label] = times.time
+            })
         if (this?.config?.details)
             Object.entries(this.config.details).forEach(([label, detail]) => {
                 printObject[label] = detail
@@ -127,7 +129,7 @@ export default class Timer {
      * @param value (optional) value for the key. Defaults to true
      */
     public addDetail(key: string, value: string | number | boolean = true) {
-        Object.assign(this.config?.details, { [key]: value })
+        Object.assign(this.config?.details, {[key]: value})
     }
 
     /**
@@ -145,6 +147,7 @@ export default class Timer {
     public getTimeUntilNow() {
         return Date.now() - this.startTime
     }
+
     /**
      * Logs a custom error message in a separate log to the main Timer
      * @param message the string to log
