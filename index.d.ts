@@ -1,8 +1,8 @@
 declare type Config = {
     /**
-     * the severity of the log, changes the way its printed in google cloud logging
+     * the severity of the log, defaults to DEFAULT
      */
-    severity?: 'INFO' | 'ERROR' | 'DEBUG' | 'NOTICE';
+    severity?: 'DEFAULT' | 'DEBUG' | 'INFO' | 'NOTICE' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'ALERT' | 'EMERGENCY';
     /**
      * the label of the log. gets printed in the google cloud summary message
      */
@@ -15,19 +15,49 @@ declare type Config = {
     };
     /** filename of the typescript source file where the log is coming from */
     filename: string;
+    /**
+     * This will be printed on all log output, to distinguish logs output by this library from other logging in
+     * your application. Its possible but not recommended to override it in the config.
+     */
+    loggerName?: 'timer-logs logger';
+    /**
+     * This will be printed on all log output from the instance configured with it, to help identify where a log has
+     * come from, or what it relates to. This is mostly useful if you have
+     * multiple instances of this class in a single file. Otherwise the file acts as an identifier.
+     */
+    logClass?: string;
+    /**
+     * Omit the stack trace from error logging. (still prints the provided file path)
+     */
+    omitStackTrace?: boolean;
 };
+declare enum Severity {
+    DEFAULT = "DEFAULT",
+    DEBUG = "DEBUG",
+    INFO = "INFO",
+    NOTICE = "NOTICE",
+    WARNING = "WARNING",
+    ERROR = "ERROR",
+    CRITICAL = "CRITICAL",
+    ALERT = "ALERT",
+    EMERGENCY = "EMERGENCY"
+}
 export default class Timer {
     private readonly startTime;
     private finishTime?;
     private mostRecentlyStartedLabel?;
     private config;
     private readonly savedTimes;
+    private splitFilePath;
+    private readonly uniqueId;
     /**
      * Create a new Timer object. Can have multiple timers within this object.
      * Should only have one of these per file. Creating this object beings a timer automatically
      * @param config required configuration object, requires filename, others are optional
      */
     constructor(config: Config);
+    private _severity;
+    set severity(value: Severity);
     /**
      * Start a new timer
      * @param label the label of the timer. this will be console logged on flush()
@@ -59,7 +89,7 @@ export default class Timer {
      */
     end(): number | undefined;
     /**
-     * prints times to the console in JSON format for Google Cloud Logging.
+     * Prints times to the console in JSON format for Google Cloud Logging.
      *
      * Will end the most recently started timer if not already ended
      */
@@ -116,6 +146,25 @@ export default class Timer {
      *        .catch(timer.genericError)
      */
     genericError(e: Error, message?: string): void;
+    /**
+     * Logs any type of Error in a separate log to the main Timer.
+     *
+     * This is a convenience wrapper on `genericError` to allow you to add a custom message,
+     * and still use in a promise catch clause.
+     * @param message custom message to log with error.
+     *
+     * @example
+     * await new Promise
+     */
+    genericErrorCustomMessage(message: string): (e: Error) => void;
+    /**
+     * Internal printing method which makes sure all of the properties are printed with each log.
+     *
+     * @param details object of
+     * @param severity
+     * @private
+     */
+    private printLog;
 }
 /**
  * Postgres error type thrown by pg library

@@ -1,14 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const crypto = require("crypto");
+var Severity;
+(function (Severity) {
+    Severity["DEFAULT"] = "DEFAULT";
+    Severity["DEBUG"] = "DEBUG";
+    Severity["INFO"] = "INFO";
+    Severity["NOTICE"] = "NOTICE";
+    Severity["WARNING"] = "WARNING";
+    Severity["ERROR"] = "ERROR";
+    Severity["CRITICAL"] = "CRITICAL";
+    Severity["ALERT"] = "ALERT";
+    Severity["EMERGENCY"] = "EMERGENCY";
+})(Severity || (Severity = {}));
 class Timer {
     constructor(config) {
         var _a, _b;
         this.startTime = Date.now();
         this.config = config;
         this.config.details = (_a = config === null || config === void 0 ? void 0 : config.details) !== null && _a !== void 0 ? _a : {};
+        this.splitFilePath = config.filename.split('/').filter(p => p.length > 0);
         this.savedTimes = {};
-        if (((_b = this.config) === null || _b === void 0 ? void 0 : _b.label) !== undefined)
-            this.start(this.config.label);
+        this._severity = Severity[(_b = this.config.severity) !== null && _b !== void 0 ? _b : Severity.DEFAULT];
+        if (this.config.label === undefined)
+            this.config.label = this.splitFilePath.slice(-1)[0].split('.')[0];
+        this.uniqueId = crypto.randomBytes(8).toString('hex');
+        this.start(this.config.label);
+    }
+    set severity(value) {
+        this._severity = value;
     }
     start(label) {
         console.assert(!this.savedTimes.hasOwnProperty(label), 'Timer started more than once for same label');
@@ -44,25 +64,23 @@ class Timer {
             return this.stop(this.mostRecentlyStartedLabel);
     }
     flush() {
-        var _a, _b, _c, _d, _e, _f;
         this.finishTime = Date.now();
         if (this.mostRecentlyStartedLabel && !this.savedTimes[this.mostRecentlyStartedLabel].finishTime)
             this.end();
         const printObject = {
-            severity: (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.severity) !== null && _b !== void 0 ? _b : 'INFO',
-            message: ((_d = (_c = this.config) === null || _c === void 0 ? void 0 : _c.label) !== null && _d !== void 0 ? _d : `Timer`) + `: ${this.finishTime - this.startTime}ms`,
-            filename: (_e = this.config) === null || _e === void 0 ? void 0 : _e.filename
+            message: this.config.label + `: ${this.finishTime - this.startTime}ms`
         };
+        const printMap = new Map(Object.entries(printObject));
         Object.entries(this.savedTimes)
             .forEach(([label, times]) => {
             if (typeof times.time === 'number')
-                printObject[label] = times.time;
+                printMap.set(label, times.time);
         });
-        if ((_f = this === null || this === void 0 ? void 0 : this.config) === null || _f === void 0 ? void 0 : _f.details)
+        if (this.config.details)
             Object.entries(this.config.details).forEach(([label, detail]) => {
-                printObject[label] = detail;
+                printMap.set(label, detail);
             });
-        console.log(JSON.stringify(printObject));
+        this.printLog(printMap, this._severity);
         return this.finishTime - this.startTime;
     }
     addDetail(key, value = true) {
@@ -77,37 +95,70 @@ class Timer {
         return Date.now() - this.startTime;
     }
     customError(message) {
-        var _a;
-        const errorLog = {
-            severity: 'ERROR',
-            message: message,
-            filename: (_a = this.config) === null || _a === void 0 ? void 0 : _a.filename
-        };
-        console.log(JSON.stringify(errorLog));
+        const errorDetails = new Map(Object.entries({ message }));
+        this.printLog(errorDetails, Severity.ERROR);
     }
     postgresError(e) {
-        var _a;
-        const errorLog = {
-            severity: 'ERROR',
-            message: 'Postgres Error: ' + e.message,
-            errno: e.errno,
-            code: e.code,
-            filename: (_a = this === null || this === void 0 ? void 0 : this.config) === null || _a === void 0 ? void 0 : _a.filename,
-            characterPositionInQuery: e.position
-        };
-        console.log(JSON.stringify(errorLog));
+        const errorDetails = new Map(Object.entries(e));
+        errorDetails.set("databaseType", "postgres");
+        this.printLog(errorDetails, Severity.ERROR);
     }
     genericError(e, message) {
+        const errorDetails = new Map([
+            ['errorName', e.name]
+        ]);
+        if (!this.config.omitStackTrace && e.stack)
+            errorDetails.set('stackTrace', e.stack);
+        if (message) {
+            errorDetails.set('message', message);
+            errorDetails.set('errorMessage', e.message);
+        }
+        else
+            errorDetails.set('message', e.message);
+        this.printLog(errorDetails, Severity.ERROR);
+    }
+    genericErrorCustomMessage(message) {
+        return (e) => this.genericError(e, message);
+    }
+    printLog(details, severity) {
         var _a;
-        const errorLog = {
-            severity: 'ERROR',
-            message,
-            errorMessage: e.message,
-            errorName: e.name,
-            stackTrace: e.stack,
-            filename: (_a = this.config) === null || _a === void 0 ? void 0 : _a.filename
+        const log = {
+            severity: severity,
+            filename: this.config.filename,
+            logClass: (_a = this.config.logClass) !== null && _a !== void 0 ? _a : this.splitFilePath.slice(-1)[0].split('.')[0],
+            loggerName: this.config.loggerName,
+            uniqueId: this.uniqueId
         };
-        console.log(JSON.stringify(errorLog));
+        details.forEach((value, key) => {
+            log[key] = value;
+        });
+        this.splitFilePath.forEach((filePath, level) => {
+            log[`FilePathDepth${level + 1}`] = filePath;
+        });
+        const logString = JSON.stringify(log);
+        switch (severity) {
+            case Severity.DEBUG:
+                console.debug(logString);
+                break;
+            case Severity.DEFAULT:
+                console.log(logString);
+                break;
+            case Severity.INFO:
+            case Severity.NOTICE:
+                console.info(logString);
+                break;
+            case Severity.WARNING:
+                console.warn(logString);
+                break;
+            case Severity.ERROR:
+            case Severity.CRITICAL:
+            case Severity.ALERT:
+            case Severity.EMERGENCY:
+                console.error(logString);
+                break;
+            default:
+                console.log(logString);
+        }
     }
 }
 exports.default = Timer;
