@@ -19,5 +19,15 @@ new Promise((resolve => setTimeout(resolve, 50)))
         throw new Error('Unexpected error occured')
     }).catch(timer.genericErrorCustomMessage('A better explanation for what caused this error'))
 
-// always call flush at the end of the file (before the return statement) to print out the log
-timer.flush()
+const postgresExample = async () => {
+    const { rows } = await new Promise((resolve => setTimeout(resolve, 50)))
+        .then(()=> {
+            throw new Error('Unexpected error occured')
+            return {rows: ['row1', 'row2']}
+        })
+        .catch(timer.postgresErrorReturn({rows:[]}))
+}
+postgresExample().then(()=>{
+    // always call flush at the end of the file (before the return statement) to print out the log
+    timer.flush()
+})

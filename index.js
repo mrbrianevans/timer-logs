@@ -98,10 +98,14 @@ class Timer {
         const errorDetails = new Map(Object.entries({ message }));
         this.printLog(errorDetails, Severity.ERROR);
     }
-    postgresError(e) {
+    postgresError(e, returnVal) {
         const errorDetails = new Map(Object.entries(e));
         errorDetails.set("databaseType", "postgres");
         this.printLog(errorDetails, Severity.ERROR);
+        return returnVal !== null && returnVal !== void 0 ? returnVal : null;
+    }
+    postgresErrorReturn(returnValue) {
+        return (e) => this.postgresError(e, returnValue);
     }
     genericError(e, message) {
         const errorDetails = new Map([
