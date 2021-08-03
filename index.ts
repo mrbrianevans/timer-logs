@@ -19,7 +19,7 @@ type Config = {
      * This will be printed on all log output, to distinguish logs output by this library from other logging in
      * your application. Its possible but not recommended to override it in the config.
      */
-    loggerName?: 'timer-logs logger'
+    loggerName?: string
     /**
      * This will be printed on all log output from the instance configured with it, to help identify where a log has
      * come from, or what it relates to. This is mostly useful if you have
@@ -66,6 +66,7 @@ export default class Timer {
         this.savedTimes = {}
         this._severity = Severity[this.config.severity ?? Severity.DEFAULT]
         if (this.config.label === undefined) this.config.label = this.splitFilePath.slice(-1)[0].split('.')[0]
+        if(this.config.loggerName === undefined) this.config.loggerName = 'timer-logs'
         this.uniqueId = crypto.randomBytes(8).toString('hex')
         this.start(this.config.label)
     }

@@ -19,7 +19,7 @@ declare type Config = {
      * This will be printed on all log output, to distinguish logs output by this library from other logging in
      * your application. Its possible but not recommended to override it in the config.
      */
-    loggerName?: 'timer-logs logger';
+    loggerName?: string;
     /**
      * This will be printed on all log output from the instance configured with it, to help identify where a log has
      * come from, or what it relates to. This is mostly useful if you have

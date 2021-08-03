@@ -24,6 +24,8 @@ class Timer {
         this._severity = Severity[(_b = this.config.severity) !== null && _b !== void 0 ? _b : Severity.DEFAULT];
         if (this.config.label === undefined)
             this.config.label = this.splitFilePath.slice(-1)[0].split('.')[0];
+        if (this.config.loggerName === undefined)
+            this.config.loggerName = 'timer-logs';
         this.uniqueId = crypto.randomBytes(8).toString('hex');
         this.start(this.config.label);
     }
