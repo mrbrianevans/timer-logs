@@ -68,6 +68,7 @@ export default class Timer {
         if (this.config.label === undefined) this.config.label = this.splitFilePath.slice(-1)[0].split('.')[0]
         if(this.config.loggerName === undefined) this.config.loggerName = 'timer-logs'
         this.uniqueId = crypto.randomBytes(8).toString('hex')
+        this.start('operationTime')
         this.start(this.config.label)
     }
 
@@ -147,6 +148,7 @@ export default class Timer {
      */
     public flush() {
         this.finishTime = Date.now()
+        this.stop('operationTime')
         if (this.mostRecentlyStartedLabel && !this.savedTimes[this.mostRecentlyStartedLabel].finishTime) this.end()
         const printObject: { [label: string]: string | number } = {
             message: this.config.label + `: ${this.finishTime - this.startTime}ms`
@@ -211,6 +213,7 @@ export default class Timer {
      */
     public postgresError(e: PostgresError, returnVal?: any): any {
         const errorDetails = new Map(Object.entries(e))
+        if(!errorDetails.has('message')) errorDetails.set('message', 'Postgres error code '+e.code)
         errorDetails.set("databaseType", "postgres")
         this.printLog(errorDetails, Severity.ERROR)
         return returnVal ?? null
@@ -284,6 +287,10 @@ export default class Timer {
      * @private
      */
     private printLog(details: Map<string, string | number | boolean | null | undefined>, severity: Severity) {
+        if(!details.has('message')){
+            // this should never be triggered. Always pass a message in the details map. Just a backup:
+            details.set('message', 'timer-logs unset message in file '+this.config.filename)
+        }
         const log: { [label: string]: string | number | boolean | null | undefined } = {
             severity: severity,
             filename: this.config.filename,
