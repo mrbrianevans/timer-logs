@@ -26,6 +26,7 @@ const postgresExample = async () => {
             return {rows: ['row1', 'row2']}
         })
         .catch(timer.postgresErrorReturn({rows:[]}))
+    console.assert(rows instanceof Array, 'Rows should be an array even if an error is thrown')
 }
 postgresExample().then(()=>{
     // always call flush at the end of the file (before the return statement) to print out the log

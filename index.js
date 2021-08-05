@@ -27,6 +27,7 @@ class Timer {
         if (this.config.loggerName === undefined)
             this.config.loggerName = 'timer-logs';
         this.uniqueId = crypto.randomBytes(8).toString('hex');
+        this.start('operationTime');
         this.start(this.config.label);
     }
     set severity(value) {
@@ -67,6 +68,7 @@ class Timer {
     }
     flush() {
         this.finishTime = Date.now();
+        this.stop('operationTime');
         if (this.mostRecentlyStartedLabel && !this.savedTimes[this.mostRecentlyStartedLabel].finishTime)
             this.end();
         const printObject = {
@@ -100,14 +102,19 @@ class Timer {
         const errorDetails = new Map(Object.entries({ message }));
         this.printLog(errorDetails, Severity.ERROR);
     }
-    postgresError(e, returnVal) {
+    postgresError(e) {
+        return this._postgresError(e, null);
+    }
+    _postgresError(e, returnVal) {
         const errorDetails = new Map(Object.entries(e));
+        if (!errorDetails.has('message'))
+            errorDetails.set('message', 'Postgres error code ' + e.code);
         errorDetails.set("databaseType", "postgres");
         this.printLog(errorDetails, Severity.ERROR);
-        return returnVal !== null && returnVal !== void 0 ? returnVal : null;
+        return returnVal;
     }
     postgresErrorReturn(returnValue) {
-        return (e) => this.postgresError(e, returnValue);
+        return (e) => this._postgresError(e, returnValue);
     }
     genericError(e, message) {
         const errorDetails = new Map([
@@ -128,6 +135,9 @@ class Timer {
     }
     printLog(details, severity) {
         var _a;
+        if (!details.has('message')) {
+            details.set('message', 'timer-logs unset message in file ' + this.config.filename);
+        }
         const log = {
             severity: severity,
             filename: this.config.filename,

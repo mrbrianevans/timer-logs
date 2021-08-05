@@ -122,13 +122,20 @@ export default class Timer {
      * Logs a postgres error message in a separate log to the main Timer.
      *
      * @param e the error object returned by postgres client
-     * @param returnVal specify a custom value to be returned. Defaults to null.
      * @return null so the promise resolves to a value
      * @example
      * const result = await pool.query('SELECT NOW()',[])
      *                            .catch(e=>timer.postgresError(e))
      */
-    postgresError(e: PostgresError, returnVal?: any): any;
+    postgresError(e: PostgresError): null;
+    /**
+     * Logs a postgres error and returns the value passed as the second parameter.
+     *
+     * @param e the postgres error object
+     * @param returnVal the value for this function to return after logging the error
+     * @private
+     */
+    private _postgresError;
     /**
      * Convenience wrapper for postgresError, to return a value.
      * By default it returns null, but can be overriden with this method.
@@ -139,7 +146,7 @@ export default class Timer {
      * const { rows } = await pool.query('SELECT NOW()',[])
      *                            .catch(e=>timer.postgresErrorReturn({rows:[]}))
      */
-    postgresErrorReturn(returnValue: any): (e: PostgresError) => any;
+    postgresErrorReturn<ReturnType>(returnValue: ReturnType): (e: PostgresError) => ReturnType;
     /**
      * Logs a generic error in a separate log to the main Timer.
      *

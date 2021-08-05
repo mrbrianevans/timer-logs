@@ -205,18 +205,28 @@ export default class Timer {
      * Logs a postgres error message in a separate log to the main Timer.
      *
      * @param e the error object returned by postgres client
-     * @param returnVal specify a custom value to be returned. Defaults to null.
      * @return null so the promise resolves to a value
      * @example
      * const result = await pool.query('SELECT NOW()',[])
      *                            .catch(e=>timer.postgresError(e))
      */
-    public postgresError(e: PostgresError, returnVal?: any): any {
+    public postgresError(e: PostgresError): null{
+        return this._postgresError(e, null)
+    }
+
+    /**
+     * Logs a postgres error and returns the value passed as the second parameter.
+     *
+     * @param e the postgres error object
+     * @param returnVal the value for this function to return after logging the error
+     * @private
+     */
+    private _postgresError<ReturnType>(e: PostgresError, returnVal: ReturnType): ReturnType {
         const errorDetails = new Map(Object.entries(e))
         if(!errorDetails.has('message')) errorDetails.set('message', 'Postgres error code '+e.code)
         errorDetails.set("databaseType", "postgres")
         this.printLog(errorDetails, Severity.ERROR)
-        return returnVal ?? null
+        return returnVal
     }
 
     /**
@@ -229,8 +239,8 @@ export default class Timer {
      * const { rows } = await pool.query('SELECT NOW()',[])
      *                            .catch(e=>timer.postgresErrorReturn({rows:[]}))
      */
-    public postgresErrorReturn(returnValue: any) {
-        return (e: PostgresError) => this.postgresError(e, returnValue)
+    public postgresErrorReturn<ReturnType>(returnValue: ReturnType): (e: PostgresError) => ReturnType {
+        return (e: PostgresError) => this._postgresError(e, returnValue)
     }
 
     /**
