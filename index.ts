@@ -306,7 +306,8 @@ export default class Timer {
             filename: this.config.filename,
             logClass: this.config.logClass ?? this.splitFilePath.slice(-1)[0].split('.')[0],
             loggerName: this.config.loggerName,
-            uniqueId: this.uniqueId
+            uniqueId: this.uniqueId,
+            timestamp: new Date().toUTCString(),
         }
         details.forEach((value, key) => {
             log[key] = value

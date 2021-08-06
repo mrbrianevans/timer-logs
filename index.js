@@ -143,7 +143,8 @@ class Timer {
             filename: this.config.filename,
             logClass: (_a = this.config.logClass) !== null && _a !== void 0 ? _a : this.splitFilePath.slice(-1)[0].split('.')[0],
             loggerName: this.config.loggerName,
-            uniqueId: this.uniqueId
+            uniqueId: this.uniqueId,
+            timestamp: new Date().toUTCString(),
         };
         details.forEach((value, key) => {
             log[key] = value;
