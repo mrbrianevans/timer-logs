@@ -193,6 +193,35 @@ export default class Timer {
     }
 
     /**
+     * Log a message at INFO severity level.
+     */
+    public info(message: string, ...messages: any[]){
+        const concatenatedMessage = [message].concat(messages?.map(m=>m.toString())).join(' ')
+        this.printLog(new Map([
+            ['message', concatenatedMessage],
+        ]), Severity.INFO)
+    }
+
+    /**
+     * Log a message at WARNING severity level.
+     */
+    public warn(message: string, ...messages: any[]){
+        const concatenatedMessage = [message].concat(messages?.map(m=>m.toString())).join(' ')
+        this.printLog(new Map([
+            ['message', concatenatedMessage],
+        ]), Severity.WARNING)
+    }
+
+    /**
+     * Log a message at ALERT severity level.
+     */
+    public alert(message: string, ...messages: any[]){
+        const concatenatedMessage = [message].concat(messages?.map(m=>m.toString())).join(' ')
+        this.printLog(new Map([
+            ['message', concatenatedMessage],
+        ]), Severity.ALERT)
+    }
+    /**
      * Logs a custom error message in a separate log to the main Timer
      * @param message the string to log
      */

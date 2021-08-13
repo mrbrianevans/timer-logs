@@ -1,7 +1,7 @@
 import Timer from '../index'
 
 // instantiate the logger with some config values. The bare minimum is the filename
-const timer = new Timer({filename: '/exemplar/index.ts', label: 'Examplary!', omitStackTrace: true})
+const timer = new Timer({filename: '/exemplar/index.ts', label: 'Exemplary!', omitStackTrace: true})
 
 // log a custom error without actually throwing Error
 timer.customError('Hellp!')
@@ -16,19 +16,23 @@ try{
 // overriding the default error message in a promise .catch()
 new Promise((resolve => setTimeout(resolve, 50)))
     .then(()=> {
-        throw new Error('Unexpected error occured')
+        throw new Error('Unexpected error occurred')
     }).catch(timer.genericErrorCustomMessage('A better explanation for what caused this error'))
 
 const postgresExample = async () => {
     const { rows } = await new Promise((resolve => setTimeout(resolve, 50)))
         .then(()=> {
-            throw new Error('Unexpected error occured')
+            throw new Error('Unexpected error occurred')
             return {rows: ['row1', 'row2']}
         })
         .catch(timer.postgresErrorReturn({rows:[]}))
     console.assert(rows instanceof Array, 'Rows should be an array even if an error is thrown')
 }
 postgresExample().then(()=>{
+
+    timer.info('Some information about the current state of the program:', false, 1, 2, 3, ['one', 'two', 'three'])
+    timer.alert('Something has gone seriously wrong!')
+    timer.warn('This shouldn\'t happen under normal circumstances, but isn\'t a catastrophe')
     // always call flush at the end of the file (before the return statement) to print out the log
     timer.flush()
 })
