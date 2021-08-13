@@ -1,6 +1,9 @@
 import * as crypto from 'crypto'
+import {browserLogPresenter, developerLogPresenter, productionLogPresenter} from "./logPresenter";
 
-type Config = {
+type LogDetails = { [key: string]: string | number | boolean }
+
+interface Config {
     /**
      * the severity of the log, defaults to DEFAULT
      */
@@ -12,7 +15,7 @@ type Config = {
     /**
      * any key-value pairs to include in the console log
      */
-    details?: { [key: string]: string | number }
+    details?: LogDetails
     /** filename of the typescript source file where the log is coming from */
     filename: string
     /**
@@ -32,7 +35,20 @@ type Config = {
     omitStackTrace?: boolean
 }
 
-enum Severity {
+/**
+ * The same options that can be passed in, but not optional. By this point the default will be set if not passed in.
+ */
+interface InternalConfig extends Config {
+    severity: Severity
+    label: string
+    details: LogDetails
+    filename: string
+    loggerName: string
+    logClass: string
+    omitStackTrace: boolean
+}
+
+export enum Severity {
     DEFAULT = "DEFAULT",
     DEBUG = "DEBUG",
     INFO = "INFO",
@@ -44,14 +60,25 @@ enum Severity {
     EMERGENCY = "EMERGENCY"
 }
 
+enum Environment {
+    DEVELOPMENT,
+    BROWSER,
+    PRODUCTION
+}
+
 export default class Timer {
     private readonly startTime: number
     private finishTime?: number
     private mostRecentlyStartedLabel?: string
-    private config: Config
     private readonly savedTimes: { [label: string]: { startTime: number; finishTime?: number; time?: number } }
-    private splitFilePath: string[]
+    private readonly splitFilePath: string[]
+    private readonly filename: string
     private readonly uniqueId: string
+    private readonly label: string
+    private readonly details: LogDetails
+    private readonly loggerName: string
+    private readonly logClass: string
+    private readonly omitStackTrace: boolean
 
     /**
      * Create a new Timer object. Can have multiple timers within this object.
@@ -60,22 +87,51 @@ export default class Timer {
      */
     constructor(config: Config) {
         this.startTime = Date.now()
-        this.config = config
-        this.config.details = config?.details ?? {}
+        this.details = config.details ?? {}
+        this.loggerName = config.loggerName ?? 'timer-logs'
+        this.filename = config.filename
         this.splitFilePath = config.filename.split('/').filter(p => p.length > 0)
+        this.label = config.label ?? this.splitFilePath.slice(-1)[0].split('.')[0]
         this.savedTimes = {}
-        this._severity = Severity[this.config.severity ?? Severity.DEFAULT]
-        if (this.config.label === undefined) this.config.label = this.splitFilePath.slice(-1)[0].split('.')[0]
-        if(this.config.loggerName === undefined) this.config.loggerName = 'timer-logs'
+        this.logClass = config.logClass ?? this.splitFilePath.slice(-1)[0].split('.')[0]
+        this.omitStackTrace = config.omitStackTrace ?? false
+        this._severity = Severity[config.severity ?? Severity.DEFAULT]
         this.uniqueId = crypto.randomBytes(8).toString('hex')
         this.start('operationTime')
-        this.start(this.config.label)
+        this.start(this.label)
     }
 
     private _severity: Severity
 
     set severity(value: Severity) {
         this._severity = value;
+    }
+
+    private static consoleLog(logObject: GenericLog) {
+        let environment: Environment
+        if (typeof window !== 'undefined')
+            environment = Environment.BROWSER
+        else if (process.env.NODE_ENV === 'development')
+            environment = Environment.DEVELOPMENT
+        else
+            environment = Environment.PRODUCTION
+
+        let logPresenter: (logObject: GenericLog) => void
+        switch (environment) {
+            case Environment.BROWSER:
+                logPresenter = browserLogPresenter
+                break;
+            case Environment.DEVELOPMENT:
+                logPresenter = developerLogPresenter
+                break;
+            case Environment.PRODUCTION:
+                logPresenter = productionLogPresenter
+                break;
+            default:
+                logPresenter = productionLogPresenter
+                break
+        }
+        logPresenter(logObject)
     }
 
     /**
@@ -150,16 +206,16 @@ export default class Timer {
         this.finishTime = Date.now()
         this.stop('operationTime')
         if (this.mostRecentlyStartedLabel && !this.savedTimes[this.mostRecentlyStartedLabel].finishTime) this.end()
-        const printObject: { [label: string]: string | number } = {
-            message: this.config.label + `: ${this.finishTime - this.startTime}ms`
+        const printObject: { [label: string]: string | number | boolean } = {
+            message: this.label + `: ${this.finishTime - this.startTime}ms`
         }
         const printMap = new Map(Object.entries(printObject))
         Object.entries(this.savedTimes)
             .forEach(([label, times]) => {
                 if (typeof times.time === 'number') printMap.set(label, times.time)
             })
-        if (this.config.details)
-            Object.entries(this.config.details).forEach(([label, detail]) => {
+        if (this.details)
+            Object.entries(this.details).forEach(([label, detail]) => {
                 printMap.set(label, detail)
             })
         this.printLog(printMap, this._severity)
@@ -173,7 +229,7 @@ export default class Timer {
      * @param value (optional) value for the key. Defaults to true
      */
     public addDetail(key: string, value: string | number | boolean = true) {
-        Object.assign(this.config?.details, {[key]: value})
+        Object.assign(this.details, {[key]: value})
     }
 
     /**
@@ -182,7 +238,7 @@ export default class Timer {
      * @param details an object of key value pairs to log
      */
     public addDetails(details: { [key: string]: string | number | boolean }) {
-        Object.assign(this.config?.details, details)
+        Object.assign(this.details, details)
     }
 
     /**
@@ -195,8 +251,8 @@ export default class Timer {
     /**
      * Log a message at INFO severity level.
      */
-    public info(message: string, ...messages: any[]){
-        const concatenatedMessage = [message].concat(messages?.map(m=>m.toString())).join(' ')
+    public info(message: string, ...messages: any[]) {
+        const concatenatedMessage = [message].concat(messages?.map(m => m.toString())).join(' ')
         this.printLog(new Map([
             ['message', concatenatedMessage],
         ]), Severity.INFO)
@@ -205,8 +261,8 @@ export default class Timer {
     /**
      * Log a message at WARNING severity level.
      */
-    public warn(message: string, ...messages: any[]){
-        const concatenatedMessage = [message].concat(messages?.map(m=>m.toString())).join(' ')
+    public warn(message: string, ...messages: any[]) {
+        const concatenatedMessage = [message].concat(messages?.map(m => m.toString())).join(' ')
         this.printLog(new Map([
             ['message', concatenatedMessage],
         ]), Severity.WARNING)
@@ -215,12 +271,13 @@ export default class Timer {
     /**
      * Log a message at ALERT severity level.
      */
-    public alert(message: string, ...messages: any[]){
-        const concatenatedMessage = [message].concat(messages?.map(m=>m.toString())).join(' ')
+    public alert(message: string, ...messages: any[]) {
+        const concatenatedMessage = [message].concat(messages?.map(m => m.toString())).join(' ')
         this.printLog(new Map([
             ['message', concatenatedMessage],
         ]), Severity.ALERT)
     }
+
     /**
      * Logs a custom error message in a separate log to the main Timer
      * @param message the string to log
@@ -239,23 +296,8 @@ export default class Timer {
      * const result = await pool.query('SELECT NOW()',[])
      *                            .catch(e=>timer.postgresError(e))
      */
-    public postgresError(e: PostgresError): null{
+    public postgresError(e: PostgresError): null {
         return this._postgresError(e, null)
-    }
-
-    /**
-     * Logs a postgres error and returns the value passed as the second parameter.
-     *
-     * @param e the postgres error object
-     * @param returnVal the value for this function to return after logging the error
-     * @private
-     */
-    private _postgresError<ReturnType>(e: PostgresError, returnVal: ReturnType): ReturnType {
-        const errorDetails = new Map(Object.entries(e))
-        if(!errorDetails.has('message')) errorDetails.set('message', 'Postgres error code '+e.code)
-        errorDetails.set("databaseType", "postgres")
-        this.printLog(errorDetails, Severity.ERROR)
-        return returnVal
     }
 
     /**
@@ -293,7 +335,7 @@ export default class Timer {
         const errorDetails = new Map([
             ['errorName', e.name]
         ])
-        if (!this.config.omitStackTrace && e.stack) errorDetails.set('stackTrace', e.stack)
+        if (!this.omitStackTrace && e.stack) errorDetails.set('stackTrace', e.stack)
         if (message) {
             errorDetails.set('message', message)
             errorDetails.set('errorMessage', e.message)
@@ -319,6 +361,21 @@ export default class Timer {
     }
 
     /**
+     * Logs a postgres error and returns the value passed as the second parameter.
+     *
+     * @param e the postgres error object
+     * @param returnVal the value for this function to return after logging the error
+     * @private
+     */
+    private _postgresError<ReturnType>(e: PostgresError, returnVal: ReturnType): ReturnType {
+        const errorDetails = new Map(Object.entries(e))
+        if (!errorDetails.has('message')) errorDetails.set('message', 'Postgres error code ' + e.code)
+        errorDetails.set("databaseType", "postgres")
+        this.printLog(errorDetails, Severity.ERROR)
+        return returnVal
+    }
+
+    /**
      * Internal printing method which makes sure all of the properties are printed with each log.
      *
      * @param details object of
@@ -326,15 +383,15 @@ export default class Timer {
      * @private
      */
     private printLog(details: Map<string, string | number | boolean | null | undefined>, severity: Severity) {
-        if(!details.has('message')){
+        if (!details.has('message')) {
             // this should never be triggered. Always pass a message in the details map. Just a backup:
-            details.set('message', 'timer-logs unset message in file '+this.config.filename)
+            details.set('message', 'timer-logs unset message in file ' + this.filename)
         }
-        const log: { [label: string]: string | number | boolean | null | undefined } = {
+        const log: GenericLog = {
             severity: severity,
-            filename: this.config.filename,
-            logClass: this.config.logClass ?? this.splitFilePath.slice(-1)[0].split('.')[0],
-            loggerName: this.config.loggerName,
+            filename: this.filename,
+            logClass: this.logClass ?? this.splitFilePath.slice(-1)[0].split('.')[0],
+            loggerName: this.loggerName,
             uniqueId: this.uniqueId,
             timestamp: new Date().toUTCString(),
         }
@@ -344,31 +401,7 @@ export default class Timer {
         this.splitFilePath.forEach((filePath, level) => {
             log[`FilePathDepth${level + 1}`] = filePath
         })
-        const logString: string = JSON.stringify(log)
-        // this affects how logs are printed in the browser
-        switch (severity) {
-            case Severity.DEBUG:
-                console.debug(logString)
-                break;
-            case Severity.DEFAULT:
-                console.log(logString)
-                break;
-            case Severity.INFO:
-            case Severity.NOTICE:
-                console.info(logString)
-                break;
-            case Severity.WARNING:
-                console.warn(logString)
-                break;
-            case Severity.ERROR:
-            case Severity.CRITICAL:
-            case Severity.ALERT:
-            case Severity.EMERGENCY:
-                console.error(logString)
-                break;
-            default:
-                console.log(logString)
-        }
+        Timer.consoleLog(log)
     }
 }
 /**
@@ -397,3 +430,15 @@ type PostgresError = {
     routine: string
 }
 
+/**
+ * These are attributes that should be set on all log output, regardless of what triggered the log.
+ */
+export type GenericLog = {
+    severity: Severity,
+    filename: string,
+    logClass: string,
+    loggerName: string,
+    uniqueId: string,
+    timestamp: string,
+    [label: string]: string | number | boolean | null | undefined
+}

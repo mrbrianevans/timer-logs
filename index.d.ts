@@ -1,4 +1,7 @@
-declare type Config = {
+declare type LogDetails = {
+    [key: string]: string | number | boolean;
+};
+interface Config {
     /**
      * the severity of the log, defaults to DEFAULT
      */
@@ -10,9 +13,7 @@ declare type Config = {
     /**
      * any key-value pairs to include in the console log
      */
-    details?: {
-        [key: string]: string | number;
-    };
+    details?: LogDetails;
     /** filename of the typescript source file where the log is coming from */
     filename: string;
     /**
@@ -30,8 +31,8 @@ declare type Config = {
      * Omit the stack trace from error logging. (still prints the provided file path)
      */
     omitStackTrace?: boolean;
-};
-declare enum Severity {
+}
+export declare enum Severity {
     DEFAULT = "DEFAULT",
     DEBUG = "DEBUG",
     INFO = "INFO",
@@ -46,10 +47,15 @@ export default class Timer {
     private readonly startTime;
     private finishTime?;
     private mostRecentlyStartedLabel?;
-    private config;
     private readonly savedTimes;
-    private splitFilePath;
+    private readonly splitFilePath;
+    private readonly filename;
     private readonly uniqueId;
+    private readonly label;
+    private readonly details;
+    private readonly loggerName;
+    private readonly logClass;
+    private readonly omitStackTrace;
     /**
      * Create a new Timer object. Can have multiple timers within this object.
      * Should only have one of these per file. Creating this object beings a timer automatically
@@ -58,6 +64,7 @@ export default class Timer {
     constructor(config: Config);
     private _severity;
     set severity(value: Severity);
+    private static consoleLog;
     /**
      * Start a new timer
      * @param label the label of the timer. this will be console logged on flush()
@@ -114,6 +121,18 @@ export default class Timer {
      */
     getTimeUntilNow(): number;
     /**
+     * Log a message at INFO severity level.
+     */
+    info(message: string, ...messages: any[]): void;
+    /**
+     * Log a message at WARNING severity level.
+     */
+    warn(message: string, ...messages: any[]): void;
+    /**
+     * Log a message at ALERT severity level.
+     */
+    alert(message: string, ...messages: any[]): void;
+    /**
      * Logs a custom error message in a separate log to the main Timer
      * @param message the string to log
      */
@@ -128,14 +147,6 @@ export default class Timer {
      *                            .catch(e=>timer.postgresError(e))
      */
     postgresError(e: PostgresError): null;
-    /**
-     * Logs a postgres error and returns the value passed as the second parameter.
-     *
-     * @param e the postgres error object
-     * @param returnVal the value for this function to return after logging the error
-     * @private
-     */
-    private _postgresError;
     /**
      * Convenience wrapper for postgresError, to return a value.
      * By default it returns null, but can be overriden with this method.
@@ -180,6 +191,14 @@ export default class Timer {
      */
     genericErrorCustomMessage(message: string): (e: Error) => void;
     /**
+     * Logs a postgres error and returns the value passed as the second parameter.
+     *
+     * @param e the postgres error object
+     * @param returnVal the value for this function to return after logging the error
+     * @private
+     */
+    private _postgresError;
+    /**
      * Internal printing method which makes sure all of the properties are printed with each log.
      *
      * @param details object of
@@ -212,5 +231,17 @@ declare type PostgresError = {
     file: string;
     line: string;
     routine: string;
+};
+/**
+ * These are attributes that should be set on all log output, regardless of what triggered the log.
+ */
+export declare type GenericLog = {
+    severity: Severity;
+    filename: string;
+    logClass: string;
+    loggerName: string;
+    uniqueId: string;
+    timestamp: string;
+    [label: string]: string | number | boolean | null | undefined;
 };
 export {};
