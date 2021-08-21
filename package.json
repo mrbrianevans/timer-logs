@@ -2,7 +2,8 @@
   "name": "timer-logs",
   "version": "1.4.0",
   "devDependencies": {
-    "@types/node": "^15.00.0"
+    "@types/node": "^15.00.0",
+    "prettier": "^2.3.2"
   },
   "author": {
     "email": "brian@brianevans.tech",

@@ -1,48 +1,6 @@
-declare type LogDetails = {
-    [key: string]: string | number | boolean;
-};
-interface Config {
-    /**
-     * the severity of the log, defaults to DEFAULT
-     */
-    severity?: 'DEFAULT' | 'DEBUG' | 'INFO' | 'NOTICE' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'ALERT' | 'EMERGENCY';
-    /**
-     * the label of the log. gets printed in the google cloud summary message
-     */
-    label?: string;
-    /**
-     * any key-value pairs to include in the console log
-     */
-    details?: LogDetails;
-    /** filename of the typescript source file where the log is coming from */
-    filename: string;
-    /**
-     * This will be printed on all log output, to distinguish logs output by this library from other logging in
-     * your application. Its possible but not recommended to override it in the config.
-     */
-    loggerName?: string;
-    /**
-     * This will be printed on all log output from the instance configured with it, to help identify where a log has
-     * come from, or what it relates to. This is mostly useful if you have
-     * multiple instances of this class in a single file. Otherwise the file acts as an identifier.
-     */
-    logClass?: string;
-    /**
-     * Omit the stack trace from error logging. (still prints the provided file path)
-     */
-    omitStackTrace?: boolean;
-}
-export declare enum Severity {
-    DEFAULT = "DEFAULT",
-    DEBUG = "DEBUG",
-    INFO = "INFO",
-    NOTICE = "NOTICE",
-    WARNING = "WARNING",
-    ERROR = "ERROR",
-    CRITICAL = "CRITICAL",
-    ALERT = "ALERT",
-    EMERGENCY = "EMERGENCY"
-}
+import { PostgresError } from "./types/dataStructures/Errors";
+import { Config } from "./types/dataStructures/Config";
+import { Severity } from "./types/enums/Severity";
 export default class Timer {
     private readonly startTime;
     private finishTime?;
@@ -56,6 +14,7 @@ export default class Timer {
     private readonly loggerName;
     private readonly logClass;
     private readonly omitStackTrace;
+    private readonly environment;
     /**
      * Create a new Timer object. Can have multiple timers within this object.
      * Should only have one of these per file. Creating this object beings a timer automatically
@@ -64,7 +23,6 @@ export default class Timer {
     constructor(config: Config);
     private _severity;
     set severity(value: Severity);
-    private static consoleLog;
     /**
      * Start a new timer
      * @param label the label of the timer. this will be console logged on flush()
@@ -190,6 +148,7 @@ export default class Timer {
      * }).catch(timer.genericErrorCustomMessage('A better explanation for what caused this error'))
      */
     genericErrorCustomMessage(message: string): (e: Error) => void;
+    private consoleLog;
     /**
      * Logs a postgres error and returns the value passed as the second parameter.
      *
@@ -207,41 +166,3 @@ export default class Timer {
      */
     private printLog;
 }
-/**
- * Postgres error type thrown by pg library
- */
-declare type PostgresError = {
-    message: string;
-    errno: string;
-    length: number;
-    name: string;
-    severity: string;
-    code: string;
-    detail?: string;
-    hint?: string;
-    position: string;
-    internalPosition?: string;
-    internalQuery?: string;
-    where?: string;
-    schema?: string;
-    table?: string;
-    column?: string;
-    dataType?: string;
-    constraint?: string;
-    file: string;
-    line: string;
-    routine: string;
-};
-/**
- * These are attributes that should be set on all log output, regardless of what triggered the log.
- */
-export declare type GenericLog = {
-    severity: Severity;
-    filename: string;
-    logClass: string;
-    loggerName: string;
-    uniqueId: string;
-    timestamp: string;
-    [label: string]: string | number | boolean | null | undefined;
-};
-export {};
