@@ -1,4 +1,6 @@
-import { LogPresenter } from "../../types/interfaces/LogPresenter";
+import {LogPresenter} from "../../types/interfaces/LogPresenter";
+import {purple, red} from "./colours/ColourConverters";
+import {SeverityColours} from "./colours/SeverityColours";
 
 /**
  * This provides an easy way for the developer to read logs while developing.
@@ -6,6 +8,21 @@ import { LogPresenter } from "../../types/interfaces/LogPresenter";
  * @param log the log object to be logged to stdout
  */
 export const DevelopmentPresenter: LogPresenter = (log) => {
-  console.log(log);
+  const filenameWidth = 20;
+  process.stdout.write(
+    [
+      purple(new Date(log.timestamp).toLocaleTimeString()),
+      (SeverityColours.get(log.severity) ?? red)(
+        `${log.severity.padEnd(7, " ")}`
+      ),
+      log["filename"]
+        .split("/")
+        .filter((f) => f)
+        .join("->")
+        .slice(-filenameWidth)
+        .padEnd(filenameWidth, "."),
+      log.message,
+    ].join(" | ") + "\n"
+  );
   return Promise.resolve();
 };

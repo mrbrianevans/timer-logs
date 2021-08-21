@@ -370,13 +370,12 @@ export default class Timer {
     details: Map<string, string | number | boolean | null | undefined>,
     severity: Severity
   ) {
-    if (!details.has("message")) {
-      // this should never be triggered. Always pass a message in the details map. Just a backup:
-      details.set(
-        "message",
-        "timer-logs unset message in file " + this.filename
-      );
-    }
+    let detailsMessage = details.get("message")?.toString();
+    // this should never be triggered. Always pass a message in the details map. Just a backup:
+    const message =
+      details.has("message") && detailsMessage
+        ? detailsMessage
+        : "timer-logs: message not set";
     const log: GenericLog = {
       severity: severity,
       filename: this.filename,
@@ -384,6 +383,7 @@ export default class Timer {
       loggerName: this.loggerName,
       uniqueId: this.uniqueId,
       timestamp: new Date().toUTCString(),
+      message,
     };
     details.forEach((value, key) => {
       log[key] = value;

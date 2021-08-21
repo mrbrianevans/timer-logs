@@ -10,6 +10,7 @@ export type GenericLog = {
   loggerName: string;
   uniqueId: string;
   timestamp: string;
+  message: string;
   [label: string]: string | number | boolean | null | undefined;
 };
 export type LogDetails = { [key: string]: string | number | boolean };

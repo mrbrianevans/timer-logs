@@ -179,17 +179,19 @@ class Timer {
         return returnVal;
     }
     printLog(details, severity) {
-        var _a;
-        if (!details.has("message")) {
-            details.set("message", "timer-logs unset message in file " + this.filename);
-        }
+        var _a, _b;
+        let detailsMessage = (_a = details.get("message")) === null || _a === void 0 ? void 0 : _a.toString();
+        const message = details.has("message") && detailsMessage
+            ? detailsMessage
+            : "timer-logs: message not set";
         const log = {
             severity: severity,
             filename: this.filename,
-            logClass: (_a = this.logClass) !== null && _a !== void 0 ? _a : this.splitFilePath.slice(-1)[0].split(".")[0],
+            logClass: (_b = this.logClass) !== null && _b !== void 0 ? _b : this.splitFilePath.slice(-1)[0].split(".")[0],
             loggerName: this.loggerName,
             uniqueId: this.uniqueId,
             timestamp: new Date().toUTCString(),
+            message,
         };
         details.forEach((value, key) => {
             log[key] = value;
