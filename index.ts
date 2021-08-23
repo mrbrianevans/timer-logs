@@ -7,6 +7,7 @@ import { Severity } from "./types/enums/Severity";
 import { BrowserPresenter } from "./src/presenters/BrowserPresenter";
 import { DevelopmentPresenter } from "./src/presenters/DevelopmentPresenter";
 import { ProductionPresenter } from "./src/presenters/ProductionPresenter";
+import { PresentSql, valueToString } from "./src/presenters/sqlPresenter";
 
 export default class Timer {
   private readonly startTime: number;
@@ -236,6 +237,34 @@ export default class Timer {
       .concat(messages?.map((m) => m.toString()))
       .join(" ");
     this.printLog(new Map([["message", concatenatedMessage]]), Severity.ALERT);
+  }
+
+  /**
+   * Log a tagged template literal.
+   */
+  public tlog(strings: TemplateStringsArray, ...values: any[]) {
+    console.log(
+      strings
+        .flatMap((s, i) =>
+          [s, i < values.length && valueToString(values[i])].filter((s) => s)
+        )
+        .join("")
+    );
+  }
+
+  /**
+   * A tagged template literal to print out a SQL query.
+   */
+  public tsql(strings: TemplateStringsArray, ...values: any[]) {
+    const queryText = strings.reduce(
+      (query, phrase, index) =>
+        index < values.length
+          ? `${query} ${phrase}$${index + 1}`
+          : `${query} ${phrase}`,
+      ""
+    );
+    if (this.environment === Environment.DEVELOPMENT)
+      console.log(PresentSql(queryText, values));
   }
 
   /**

@@ -7,9 +7,9 @@ import {SeverityColours} from "./colours/SeverityColours";
  * Nicely formatted logs in your console, rather than well structured data for a server log file.
  * @param log the log object to be logged to stdout
  */
-export const DevelopmentPresenter: LogPresenter = (log) => {
-  const filenameWidth = 20;
-  process.stdout.write(
+export const DevelopmentPresenter: LogPresenter = async (log) => {
+  const filenameWidth = 30;
+  const output: string =
     [
       purple(new Date(log.timestamp).toLocaleTimeString()),
       (SeverityColours.get(log.severity) ?? red)(
@@ -22,7 +22,6 @@ export const DevelopmentPresenter: LogPresenter = (log) => {
         .slice(-filenameWidth)
         .padEnd(filenameWidth, "."),
       log.message,
-    ].join(" | ") + "\n"
-  );
-  return Promise.resolve();
+    ].join(" | ") + "\n";
+  await new Promise((resolve) => process.stdout.write(output, resolve));
 };

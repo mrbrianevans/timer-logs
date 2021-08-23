@@ -6,6 +6,7 @@ const Severity_1 = require("./types/enums/Severity");
 const BrowserPresenter_1 = require("./src/presenters/BrowserPresenter");
 const DevelopmentPresenter_1 = require("./src/presenters/DevelopmentPresenter");
 const ProductionPresenter_1 = require("./src/presenters/ProductionPresenter");
+const sqlPresenter_1 = require("./src/presenters/sqlPresenter");
 class Timer {
     constructor(config) {
         var _a, _b, _c, _d, _e, _f;
@@ -126,6 +127,18 @@ class Timer {
             .concat(messages === null || messages === void 0 ? void 0 : messages.map((m) => m.toString()))
             .join(" ");
         this.printLog(new Map([["message", concatenatedMessage]]), Severity_1.Severity.ALERT);
+    }
+    tlog(strings, ...values) {
+        console.log(strings
+            .flatMap((s, i) => [s, i < values.length && sqlPresenter_1.valueToString(values[i])].filter((s) => s))
+            .join(""));
+    }
+    tsql(strings, ...values) {
+        const queryText = strings.reduce((query, phrase, index) => index < values.length
+            ? `${query} ${phrase}$${index + 1}`
+            : `${query} ${phrase}`, "");
+        if (this.environment === Environment_1.Environment.DEVELOPMENT)
+            console.log(sqlPresenter_1.PresentSql(queryText, values));
     }
     customError(message) {
         const errorDetails = new Map(Object.entries({ message }));

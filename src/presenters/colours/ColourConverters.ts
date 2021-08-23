@@ -25,15 +25,15 @@ export const lightBlue: ColourConverter = (message) => {
   return wrap(message, colourTable["lightBlue"]);
 };
 
-function wrap(message: string, colour: string) {
+export function wrap(message: string, colour: string) {
   return `${colour}${message}\x1b[0m`;
 }
 
-function rgb(r: number, g: number, b: number) {
+export function rgb(r: number, g: number, b: number) {
   return `\x1b[38;2;${r};${g};${b}m`;
 }
 
-const colourTable = {
+export const colourTable = {
   red: rgb(235, 77, 75),
   pink: rgb(255, 121, 121),
   orange: rgb(255, 190, 118),

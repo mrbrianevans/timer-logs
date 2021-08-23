@@ -91,6 +91,14 @@ export default class Timer {
      */
     alert(message: string, ...messages: any[]): void;
     /**
+     * Log a tagged template literal.
+     */
+    tlog(strings: TemplateStringsArray, ...values: any[]): void;
+    /**
+     * A tagged template literal to print out a SQL query.
+     */
+    tsql(strings: TemplateStringsArray, ...values: any[]): void;
+    /**
      * Logs a custom error message in a separate log to the main Timer
      * @param message the string to log
      */
