@@ -1,11 +1,11 @@
 import Timer from "../index";
+import { taggedLiteralRunner } from "./taggedLiterals";
 
 // instantiate the logger with some config values. The bare minimum is the filename
 const timer = new Timer({
   filename: "/exemplar/index.ts",
   label: "Exemplar of how the logger can be used",
   omitStackTrace: true,
-  environment: "production",
 });
 
 // log a custom error without actually throwing Error
@@ -17,7 +17,7 @@ try {
 } catch (e) {
   timer.genericError(e);
 }
-
+taggedLiteralRunner();
 // overriding the default error message in a promise .catch()
 new Promise((resolve) => setTimeout(resolve, 50))
   .then(() => {
