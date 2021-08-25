@@ -40,9 +40,13 @@ export interface Config {
    */
   omitStackTrace?: boolean;
   /**
-   * Set the environment for dev/prod/browser. This takes precedence over the NODE_ENV environment variable.
+   * Override the environment setting for this logging instance.
    *
-   * Changes the way logs are printed. Production makes
+   * This can be set at an environment level with the LOGGING_ENV or NODE_ENV environment variable.
+   *
+   * Order of precedence: config value > LOGGING_ENV > NODE_ENV > 'production' default
+   *
+   * Changes the way logs are printed.
    */
   environment?: "development" | "production" | "browser";
 }

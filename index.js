@@ -9,7 +9,7 @@ const ProductionPresenter_1 = require("./src/presenters/ProductionPresenter");
 const sqlPresenter_1 = require("./src/presenters/sqlPresenter");
 class Timer {
     constructor(config) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         this.startTime = Date.now();
         this.details = (_a = config.details) !== null && _a !== void 0 ? _a : {};
         this.loggerName = (_b = config.loggerName) !== null && _b !== void 0 ? _b : "timer-logs";
@@ -25,12 +25,9 @@ class Timer {
         this.start(this.label);
         if (typeof window !== "undefined")
             this.environment = Environment_1.Environment.BROWSER;
-        else if (process.env.NODE_ENV === "development")
-            this.environment = Environment_1.Environment.DEVELOPMENT;
-        else
-            this.environment = Environment_1.Environment.PRODUCTION;
-        if (config.environment !== undefined) {
-            switch (config.environment) {
+        else {
+            const coalescedEnv = (_j = (_h = (_g = config.environment) !== null && _g !== void 0 ? _g : process.env.LOGGING_ENV) !== null && _h !== void 0 ? _h : process.env.NODE_ENV) !== null && _j !== void 0 ? _j : "production";
+            switch (coalescedEnv) {
                 case "browser":
                     this.environment = Environment_1.Environment.BROWSER;
                     break;
@@ -129,9 +126,12 @@ class Timer {
         this.printLog(new Map([["message", concatenatedMessage]]), Severity_1.Severity.ALERT);
     }
     tlog(strings, ...values) {
-        console.log(strings
+        const message = strings
             .flatMap((s, i) => [s, i < values.length && sqlPresenter_1.valueToString(values[i])].filter((s) => s))
-            .join(""));
+            .join("");
+        this.printLog(new Map(Object.entries({
+            message,
+        })), Severity_1.Severity.INFO);
     }
     tsql(strings, ...values) {
         const queryText = strings.reduce((query, phrase, index) => index < values.length

@@ -48,11 +48,13 @@ export default class Timer {
     this.start(this.label);
     // set the environment
     if (typeof window !== "undefined") this.environment = Environment.BROWSER;
-    else if (process.env.NODE_ENV === "development")
-      this.environment = Environment.DEVELOPMENT;
-    else this.environment = Environment.PRODUCTION;
-    if (config.environment !== undefined) {
-      switch (config.environment) {
+    else {
+      const coalescedEnv =
+        config.environment ??
+        process.env.LOGGING_ENV ??
+        process.env.NODE_ENV ??
+        "production";
+      switch (coalescedEnv) {
         case "browser":
           this.environment = Environment.BROWSER;
           break;
@@ -243,12 +245,18 @@ export default class Timer {
    * Log a tagged template literal.
    */
   public tlog(strings: TemplateStringsArray, ...values: any[]) {
-    console.log(
-      strings
-        .flatMap((s, i) =>
-          [s, i < values.length && valueToString(values[i])].filter((s) => s)
-        )
-        .join("")
+    const message = strings
+      .flatMap((s, i) =>
+        [s, i < values.length && valueToString(values[i])].filter((s) => s)
+      )
+      .join("");
+    this.printLog(
+      new Map(
+        Object.entries({
+          message,
+        })
+      ),
+      Severity.INFO
     );
   }
 
