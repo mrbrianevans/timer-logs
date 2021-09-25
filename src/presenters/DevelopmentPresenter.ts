@@ -13,7 +13,7 @@ const severityWidth = 7;
  */
 export const DevelopmentPresenter: LogPresenter = async (log) => {
   if (log.filename.length > longestFilename) {
-    longestFilename = Math.min(log.filename.length + 1, MAX_FILENAME_LENGTH);
+    longestFilename = Math.min(log.filename.length, MAX_FILENAME_LENGTH);
   }
   const filenameWidth = longestFilename;
   const messages: string[] = [
@@ -54,11 +54,9 @@ const printTimestampedLog = async (
     lineCount
   );
   severities = centerMultilineLog([severity], lineCount, severityWidth);
-  const centeredArrays = linesArray.map((lines) =>
-    centerMultilineLog(lines, lineCount)
-  );
+  let output = "";
   for (let index = 0; index < lineCount; index++) {
-    const output: string =
+    output +=
       [
         purple(timestamps[index]),
         severities[index],
@@ -66,14 +64,15 @@ const printTimestampedLog = async (
           (lines) => centerMultilineLog(lines, lineCount)[index]
         ),
       ].join(lightBlue(" | ")) + "\n";
-    await new Promise((resolve) => process.stdout.write(output, resolve));
   }
+  await new Promise((resolve) => process.stdout.write(output, resolve));
 };
 
 /**
  * Centers a single line in a multiline output. Takes a single line to output and returns an array of lines.
- * @param output a single line to put in the center of the log.
+ * @param output an array of lines to center. Must have length less than or equal to lineCount.
  * @param lineCount the number of lines in total in which to center this output string.
+ * @param minWidth (optional) the minimum number of characters of this column
  */
 const centerMultilineLog = (
   output: string[],
@@ -83,33 +82,26 @@ const centerMultilineLog = (
   if (output.length > lineCount)
     throw new Error("Can't have more lines than line count");
   const visibleOutput = output
-    .map((out) => out.replace(/\x1b\[[0-9;]*?m/, "").trim())
+    .map((out) => out.replace(/\x1b\[[0-9;]*?m/g, "").trimEnd())
     .filter((s) => s.length);
+
   const longestVisibleOutput = Math.max(
     ...visibleOutput.map((v) => v.length),
     minWidth ?? 0
   );
-  const center = Math.ceil(lineCount / 2);
-  // console.log(
-  //   "output length: ",
-  //   longestVisibleOutput,
-  //   `Output: '${visibleOutput.sort((a, b) => b.length - a.length)[0]}'`
-  // );
+  // if the top and bottom lines are empty, fill them with a line
   const startGap = Math.ceil((lineCount - visibleOutput.length) / 2);
   const lines = Array(startGap).fill(" ".repeat(longestVisibleOutput));
   const lengthToEndLog = lines.push(
-    ...visibleOutput.map((o) => o.padEnd(longestVisibleOutput, " "))
+    ...output.map((o) => o.padEnd(longestVisibleOutput, " "))
   );
   lines.push(
     ...Array(lineCount - lengthToEndLog).fill(" ".repeat(longestVisibleOutput))
   );
+  if (lineCount - output.length >= 2) {
+    const lineString = "=".repeat(longestVisibleOutput);
+    lines[0] = lineString;
+    lines[lines.length - 1] = lineString;
+  }
   return lines;
 };
-
-// targeting logs looking like this:
-
-//    |       | logline1
-//    |       | logline2
-//sdf | date  | logline3
-//sdf |       | logline4
-//    |       | logline5

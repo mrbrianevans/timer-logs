@@ -10,6 +10,8 @@ export const taggedLiteralRunner = () => {
   timer.tlog`I am a 
 multiline
 string`;
+
+  timer.tsql`SELECT * FROM persons`;
 };
 
 taggedLiteralRunner();

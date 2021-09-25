@@ -8,6 +8,7 @@ import { BrowserPresenter } from "./src/presenters/BrowserPresenter";
 import { DevelopmentPresenter } from "./src/presenters/DevelopmentPresenter";
 import { ProductionPresenter } from "./src/presenters/ProductionPresenter";
 import { PresentSql, valueToString } from "./src/presenters/sqlPresenter";
+import { LogPresenter } from "./types/interfaces/LogPresenter";
 
 export default class Timer {
   private readonly startTime: number;
@@ -63,6 +64,9 @@ export default class Timer {
           break;
         case "production":
         default:
+          console.log(
+            `Invalid logging environment '${coalescedEnv}', using 'production' instead.`
+          );
           this.environment = Environment.PRODUCTION;
           break;
       }
@@ -271,8 +275,11 @@ export default class Timer {
           : `${query} ${phrase}`,
       ""
     );
-    if (this.environment === Environment.DEVELOPMENT)
-      console.log(PresentSql(queryText, values));
+    if (this.environment === Environment.DEVELOPMENT) {
+      const logMap = new Map();
+      logMap.set("message", PresentSql(queryText, values));
+      this.printLog(logMap, Severity.DEBUG);
+    }
   }
 
   /**
@@ -359,7 +366,7 @@ export default class Timer {
   }
 
   private consoleLog(logObject: GenericLog) {
-    let logPresenter: (logObject: GenericLog) => void;
+    let logPresenter: LogPresenter;
     switch (this.environment) {
       case Environment.BROWSER:
         logPresenter = BrowserPresenter;
@@ -374,6 +381,7 @@ export default class Timer {
         logPresenter = ProductionPresenter;
         break;
     }
+    // todo: this should be asynchronous await
     logPresenter(logObject);
   }
 

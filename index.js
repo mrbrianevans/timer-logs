@@ -36,6 +36,7 @@ class Timer {
                     break;
                 case "production":
                 default:
+                    console.log(`Invalid logging environment '${coalescedEnv}', using 'production' instead.`);
                     this.environment = Environment_1.Environment.PRODUCTION;
                     break;
             }
@@ -137,8 +138,11 @@ class Timer {
         const queryText = strings.reduce((query, phrase, index) => index < values.length
             ? `${query} ${phrase}$${index + 1}`
             : `${query} ${phrase}`, "");
-        if (this.environment === Environment_1.Environment.DEVELOPMENT)
-            console.log(sqlPresenter_1.PresentSql(queryText, values));
+        if (this.environment === Environment_1.Environment.DEVELOPMENT) {
+            const logMap = new Map();
+            logMap.set("message", sqlPresenter_1.PresentSql(queryText, values));
+            this.printLog(logMap, Severity_1.Severity.DEBUG);
+        }
     }
     customError(message) {
         const errorDetails = new Map(Object.entries({ message }));

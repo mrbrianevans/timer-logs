@@ -6,6 +6,7 @@ const timer = new Timer({
   filename: "/exemplar/index.ts",
   label: "Exemplar of how the logger can be used",
   omitStackTrace: true,
+  environment: "development",
 });
 
 // log a custom error without actually throwing Error
