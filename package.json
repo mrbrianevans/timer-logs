@@ -13,7 +13,8 @@
   "license": "MIT",
   "types": "./Timer.d.ts",
   "scripts": {
-    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly"
+    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "nodejs",
