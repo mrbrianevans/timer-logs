@@ -63,6 +63,8 @@ export default class Timer {
           this.environment = Environment.DEVELOPMENT;
           break;
         case "production":
+          this.environment = Environment.PRODUCTION;
+          break;
         default:
           console.log(
             `Invalid logging environment '${coalescedEnv}', using 'production' instead.`
