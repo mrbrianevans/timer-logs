@@ -1,6 +1,6 @@
 {
   "name": "timer-logs",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "devDependencies": {
     "@types/node": "^15.00.0",
     "prettier": "^2.3.2"
