@@ -48,8 +48,19 @@ const isIn = (arr: string[]) =>
  * @param query string sql query to format
  */
 function formatSql(query: string): string {
-  const newlineKeywords = ["SELECT", "FROM", "WHERE"];
-  const indentKeywords = ["JOIN", "AND", "OR"];
+  const newlineKeywords = ["SELECT", "FROM", "WHERE", "INSERT", "UPDATE"];
+  const indentKeywords = [
+    "FULL OUTER JOIN",
+    "LEFT OUTER JOIN",
+    "LEFT JOIN",
+    "RIGHT JOIN",
+    "RIGHT OUTER JOIN",
+    "INNER JOIN",
+    "NATURAL JOIN",
+    "JOIN",
+    "AND",
+    "OR",
+  ];
   const doubleIndentKeywords = ["ON"];
 
   const oneSpaceSymbol = new RegExp(/\s*[<=>]+\s*/, "g");
@@ -80,23 +91,39 @@ function highlightSql(query: string, palette?: SqlColourPalette): string {
   const cPalette = palette ?? defaultSqlColourPalette;
   const sqlKeywords = [
     "SELECT",
+    "AS",
     "FROM",
     "WHERE",
     "OR",
     "AND",
     "JOIN",
+    "RIGHT",
+    "OUTER",
+    "INNER",
+    "FULL",
+    "NATURAL",
+    "LEFT",
     "ON",
     "LIKE",
     "ILIKE",
     "IN",
     "ANY",
+    "INSERT",
+    "INTO",
+    "UPDATE",
+    "SET",
+    "DO",
+    "CONFLICT",
+    "EXCLUDED",
   ];
-  const isString = new RegExp(/('.*?')|(".*?")/, "g");
+  const isString = new RegExp(/('.*?')|(".*?")|(`.*?`)/, "g");
   const isNumber = new RegExp(/[0-9]+/, "g");
-  const isPunctuation = new RegExp(/[,<=\-~>*]/, "g");
+  const isPunctuation = new RegExp(/[,<=\-~>*]|(;$)/, "g");
   const highlightedQuery = query
     .replace(isNumber, (num) => wrap(num, cPalette.numbers))
-    .replace(isIn(sqlKeywords), (keyword) => wrap(keyword, cPalette.keywords))
+    .replace(isIn(sqlKeywords), (keyword) =>
+      wrap(keyword.toUpperCase(), cPalette.keywords)
+    )
     .replace(isString, (str) => wrap(str, cPalette.strings))
     .replace(isPunctuation, (punc) =>
       wrap(punc, cPalette?.punctuation ?? cPalette.keywords)
