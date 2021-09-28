@@ -28,13 +28,44 @@ export const DevelopmentPresenter: LogPresenter = async (log) => {
   await printTimestampedLog(new Date(log.timestamp), log.severity, messages);
 };
 
+/**
+ * Split a string into chunks of a certain width. Used to split messages over multiple lines in terminal.
+ */
+const splitByWidth = (message: string, maxWidth: number): string[] => {
+  let remainingMessage = message;
+  let lines = [];
+  while (remainingMessage.length > maxWidth) {
+    // split on last space or dash if one exists
+    const lastSpace = remainingMessage.lastIndexOf(" ", maxWidth);
+    const lastDash = remainingMessage.lastIndexOf("-", maxWidth);
+    // if split lines on a space, remove that leading space from the second line
+    const spaceRemoved = lastSpace !== -1;
+    const splitOnIndex =
+      [lastSpace, lastDash].find((width) => width > 0) ?? maxWidth;
+    lines.push(remainingMessage.slice(0, splitOnIndex));
+    remainingMessage = remainingMessage.slice(
+      splitOnIndex + (spaceRemoved ? 1 : 0)
+    );
+  }
+  lines.push(remainingMessage);
+  return lines;
+};
+
 const printTimestampedLog = async (
   timestamp: Date,
   severity: Severity,
   messages: string[]
 ) => {
   // linesArray is an array of arrays, where each message has its own array [['message1'],['message2']]
-  const linesArray = messages.map((message) => message.split("\n"));
+  const [maxLineWidth] = process.stdout.getWindowSize();
+  const maxMessageWidth =
+    maxLineWidth - longestFilename - severityWidth - timestampWidth - 9; // minus nine for pipes and spacing
+  const linesArray = messages.map((message) =>
+    message
+      .split("\n")
+      .map((message) => splitByWidth(message, maxMessageWidth))
+      .flat()
+  );
   // gets the message with the most lines lineCount
   const lineCount = Math.max(...linesArray.map((lines) => lines.length), 1);
   // if multiline, print the date as well as the time for the timestamp

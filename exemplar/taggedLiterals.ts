@@ -12,6 +12,8 @@ multiline
 string`;
 
   timer.tsql`SELECT * FROM persons`;
+
+  timer.tlog`I am a very long string and should be wrapped over multiple lines in most regular sized command line terminals if using a small monitor/laptop screen to test timer-logs package from npm`;
 };
 
 taggedLiteralRunner();
