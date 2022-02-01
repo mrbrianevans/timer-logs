@@ -1,7 +1,7 @@
-import { LogPresenter } from "../../types/interfaces/LogPresenter";
+import type { LogPresenter } from "../../types/interfaces/LogPresenter";
 import { lightBlue, purple, red } from "./colours/ColourConverters";
 import { SeverityColours } from "./colours/SeverityColours";
-import { Severity } from "../../types/enums/Severity";
+import type { Severity } from "../../types/enums/Severity";
 let longestFilename = 0;
 const MAX_FILENAME_LENGTH = 50;
 const timestampWidth = 10;

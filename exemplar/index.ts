@@ -1,4 +1,4 @@
-import Timer from "../index";
+import Timer from "timer-logs";
 import { taggedLiteralRunner } from "./taggedLiterals";
 
 // instantiate the logger with some config values. The bare minimum is the filename

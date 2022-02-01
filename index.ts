@@ -337,16 +337,30 @@ export default class Timer {
    * @example
    * await asynchronousFunction()
    *        .then()
-   *        .catch(timer.genericError)
+   *        .catch(e=>timer.genericError(e))
    */
-  public genericError(e: Error, message?: string) {
-    const errorDetails = new Map([["errorName", e.name]]);
-    if (!this.omitStackTrace && e.stack)
-      errorDetails.set("stackTrace", e.stack);
-    if (message) {
-      errorDetails.set("message", message);
-      errorDetails.set("errorMessage", e.message);
-    } else errorDetails.set("message", e.message);
+  public genericError(e: Error | unknown, message?: string) {
+    const errorDetails = new Map();
+    if (e instanceof Error) {
+      errorDetails.set("errorName", e.name);
+      if (!this.omitStackTrace && e.stack)
+        errorDetails.set("stackTrace", e.stack);
+      if (message) {
+        errorDetails.set("message", message);
+        errorDetails.set("errorMessage", e.message);
+      } else errorDetails.set("message", e.message);
+    } else {
+      switch (typeof e) {
+        case "object":
+          if (e !== null)
+            for (const eKey in e)
+              errorDetails.set(eKey, String(e[eKey as keyof typeof e]));
+          break;
+        default:
+          errorDetails.set("error", String(e));
+      }
+    }
+
     this.printLog(errorDetails, Severity.ERROR);
   }
 
