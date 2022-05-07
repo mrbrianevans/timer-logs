@@ -1,16 +1,16 @@
 import * as crypto from "crypto";
-import { PostgresError } from "./types/dataStructures/Errors";
-import { Config } from "./types/dataStructures/Config";
-import { Environment } from "./types/enums/Environment";
-import { GenericLog, LogDetails } from "./types/dataStructures/Logs";
-import { Severity } from "./types/enums/Severity";
-import { BrowserPresenter } from "./src/presenters/BrowserPresenter";
-import { DevelopmentPresenter } from "./src/presenters/DevelopmentPresenter";
-import { ProductionPresenter } from "./src/presenters/ProductionPresenter";
-import { PresentSql, valueToString } from "./src/presenters/sqlPresenter";
-import { LogPresenter } from "./types/interfaces/LogPresenter";
+import type { PostgresError } from "./types/dataStructures/Errors";
+import type { Config } from "./types/dataStructures/Config.js";
+import { Environment } from "./types/enums/Environment.js";
+import type { GenericLog, LogDetails } from "./types/dataStructures/Logs";
+import { Severity } from "./types/enums/Severity.js";
+import { BrowserPresenter } from "./src/presenters/BrowserPresenter.js";
+import { DevelopmentPresenter } from "./src/presenters/DevelopmentPresenter.js";
+import { ProductionPresenter } from "./src/presenters/ProductionPresenter.js";
+import { PresentSql, valueToString } from "./src/presenters/sqlPresenter.js";
+import type { LogPresenter } from "./types/interfaces/LogPresenter";
 
-export default class Timer {
+export class Timer {
   private readonly startTime: number;
   private finishTime?: number;
   private mostRecentlyStartedLabel?: string;

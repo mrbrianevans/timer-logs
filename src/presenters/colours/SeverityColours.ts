@@ -1,6 +1,6 @@
-import { Severity } from "../../../types/enums/Severity";
-import { ColourConverter } from "../../../types/interfaces/ColourConverter";
-import { lightBlue, orange, pink, red } from "./ColourConverters";
+import { Severity } from "../../../types/enums/Severity.js";
+import { ColourConverter } from "../../../types/interfaces/ColourConverter.js";
+import { lightBlue, orange, pink, red } from "./ColourConverters.js";
 
 export const SeverityColours = new Map<Severity, ColourConverter>([
   [Severity.DEFAULT, lightBlue],

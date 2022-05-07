@@ -1,4 +1,4 @@
-import { ColourConverter } from "../../../types/interfaces/ColourConverter";
+import { ColourConverter } from "../../../types/interfaces/ColourConverter.js";
 
 export const red: ColourConverter = (message) => {
   return wrap(message, colourTable["red"]);

@@ -1,4 +1,4 @@
-import Timer from "../index";
+import { Timer } from "timer-logs";
 
 export const taggedLiteralRunner = () => {
   const timer = new Timer({ filename: "exemplar/taggedLiterals.ts" });

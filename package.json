@@ -7,7 +7,7 @@
   "devDependencies": {
     "@types/node": "^15.00.0",
     "prettier": "^2.3.2",
-    "typescript": "^4.5.5"
+    "typescript": "^4.6.4"
   },
   "author": {
     "email": "brian@brianevans.tech",
@@ -20,7 +20,7 @@
     "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
     "prepublish": "npm run build"
   },
-  "type": "commonjs",
+  "type": "module",
   "keywords": [
     "nodejs",
     "typescript",

@@ -1,4 +1,4 @@
-import { LogPresenter } from "../../types/interfaces/LogPresenter";
+import type { LogPresenter } from "../../types/interfaces/LogPresenter";
 
 /**
  * JSON formatted string log output, suitable for logging on Google Cloud.

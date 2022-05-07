@@ -1,5 +1,5 @@
-import { SqlColourPalette } from "../../../types/dataStructures/SqlColourPalette";
-import { colourTable, rgb } from "./ColourConverters";
+import type { SqlColourPalette } from "../../../types/dataStructures/SqlColourPalette";
+import { colourTable, rgb } from "./ColourConverters.js";
 
 export const defaultSqlColourPalette: SqlColourPalette = {
   keywords: colourTable.orange,

@@ -15,7 +15,7 @@ npm install timer-logs
 ## Usage
 
 ```typescript
-import Timer from 'timer-logs'
+import { Timer } from 'timer-logs'
 
 const webservice = async () => {
     const timer = new Timer({filename: 'webservice.ts'})

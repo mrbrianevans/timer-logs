@@ -1,5 +1,5 @@
-import {LogPresenter} from "../../types/interfaces/LogPresenter";
-import {Severity} from "../../types/enums/Severity";
+import type { LogPresenter } from "../../types/interfaces/LogPresenter";
+import { Severity } from "../../types/enums/Severity.js";
 
 /**
  * Logging optimised for the browser dev tools console.

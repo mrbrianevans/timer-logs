@@ -1,5 +1,5 @@
-import Timer from "timer-logs";
-import { taggedLiteralRunner } from "./taggedLiterals";
+import {Timer} from "timer-logs";
+import {taggedLiteralRunner} from "./taggedLiterals.js";
 
 // instantiate the logger with some config values. The bare minimum is the filename
 const timer = new Timer({

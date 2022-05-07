@@ -1,9 +1,9 @@
-import { SqlColourPalette } from "../../types/dataStructures/SqlColourPalette";
+import type { SqlColourPalette } from "../../types/dataStructures/SqlColourPalette";
 import {
   altSqlColourPalette,
   defaultSqlColourPalette,
-} from "./colours/SqlColourPalettes";
-import { wrap } from "./colours/ColourConverters";
+} from "./colours/SqlColourPalettes.js";
+import { wrap } from "./colours/ColourConverters.js";
 
 /**
  * Get a formatted string version of a value of any type.

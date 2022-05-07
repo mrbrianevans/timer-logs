@@ -1,11 +1,12 @@
 {
   "name": "exemplar",
   "version": "1.0.0",
+  "type": "module",
   "devDependencies": {
-    "ts-node": "^10.1.0"
+    "ts-node": "^10.7.0"
   },
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "ts-node --esm index.ts"
   },
   "dependencies": {
     "timer-logs": "file:.."
